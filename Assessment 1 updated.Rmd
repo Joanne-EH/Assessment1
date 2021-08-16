@@ -43,7 +43,21 @@ head(fastfood, n = 10)
 
 knitr::kable(head(fastfood[, 1:5]), "simple")
 
+str(fastfood)
 
+
+fastfood%>%
+  filter(calories>1000)
+
+
+dont_eat_this<-data.frame(
+fastfood%>%
+    filter(total_fat>40 & total_carb>80))
+
+
+fastfood%>%
+  filter(restaurant== "Mcdonalds")
+ 
 ```
 
 
