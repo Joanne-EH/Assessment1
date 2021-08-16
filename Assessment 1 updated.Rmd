@@ -28,8 +28,23 @@ R Markdown supports dozens of static and dynamic output formats including HTML, 
 
 
 ```{r}
-read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-09-04/fastfood_calories.csv")
+download.file(url = "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-09-04/fastfood_calories.csv",
+ destfile = "fastfood.csv")
+
+fastfood<- read.csv("fastfood.csv",
+              stringsAsFactors = FALSE)
+
+data <- fastfood
+
+fastfood <-read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-09-04/fastfood_calories.csv")
+
+head(fastfood)
+head(fastfood, n = 10)
+
+knitr::kable(head(fastfood[, 1:5]), "simple")
 
 
 ```
+
+
 
