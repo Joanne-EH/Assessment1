@@ -5,7 +5,6 @@ date: "16/08/2021"
 output: html_document
 ---
 
-## Assessment 1:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -85,11 +84,6 @@ average_calories <- data.frame(fastfood %>%
   summarise(calories= mean(calories)))
 
 
-#graph grey fill
-ggplot(data = fastfood) +
-  geom_col(mapping = aes(x =total_fat , y = restaurant)) +
-  coord_flip()
-
 #graph with colour
 fastfood %>%
   ggplot(aes(total_fat, restaurant, fill = restaurant)) +
@@ -104,6 +98,9 @@ fastfood %>%
 Like bar charts, **column charts** can be used to plot both nominal data and ordinal data, and they can be used instead of a pie chart to plot data with a part-to-whole relationship.
 
 ```{r}
+max_total_fat <- data.frame(fastfood) %>%
+  group_by(restaurant) %>%
+  summarise(total_fat= max(total_fat))
 
 ```
 
