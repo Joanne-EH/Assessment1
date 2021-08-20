@@ -102,5 +102,11 @@ max_total_fat <- data.frame(fastfood) %>%
   group_by(restaurant) %>%
   summarise(total_fat= max(total_fat))
 
+fastfood %>% 
+  group_by("Macdonalds")%>%
+  ggplot(aes(sugar,protein))+
+  geom_point()
+ 
+
 ```
 
