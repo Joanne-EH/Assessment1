@@ -7,17 +7,15 @@ output: html_document
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
 #install.packages(scales)
-#install.packages(lubridate)
-
+#install.packages("knitr")
 
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
 library(skimr)
 library(janitor)
+library(knitr)
 theme_set(theme_light())
 ```
 
@@ -60,12 +58,9 @@ fastfood%>%
 #10.Observations from restaurant Mcdonalds
 data%>%
   filter(restaurant== "Mcdonalds")
- 
 ```
-
-## Part 2
-
-
+ 
+ ## Part 2
 ```{r}
 library(skimr)
 
@@ -90,13 +85,11 @@ fastfood %>%
   ggplot(aes(total_fat, restaurant, fill = restaurant)) +
     geom_col()+
   coord_flip()
-
 ```
 
 **Column charts** are useful for showing data changes over a period of time or *for illustrating comparisons among items*. In **column charts**, categories are typically organized along the horizontal axis and values along the vertical axis.
 
 Like bar charts, **column charts** can be used to plot both nominal data and ordinal data, and they can be used instead of a pie chart to plot data with a part-to-whole relationship.
-
 ```{r}
 #16. A variable to the dataset, which calculates the maximum total fat per type of restaurant.
 max_total_fat <- data.frame(fastfood) %>%
@@ -112,7 +105,6 @@ fastfood %>%
 ```
 
 ## Part 3
-
 ```{r}
 #18.Variable(s) which should be factors
 fastfood$restaurant <- as_factor(fastfood$restaurant)
@@ -121,22 +113,26 @@ fastfood$item <- as_factor(fastfood$item)
 str(fastfood)
 ```
 
-
 ```{r}
-as_tibble(fastfood)
 
-#19.Create two new variables.
+#19.Create new variable (1/2).
 calories_type <- 
 fastfood %>% 
   mutate(calories=cut_number(calories,3, labels=c('low', 'med', 'high'))) %>% 
   arrange(calories_type,desc()) 
 
-#20.
+#20.Dataviz that shows the distribution of `calories_type` in food items for each type of restaurant. 
 calories_type%>% 
-  group_by(restaurant)%>%
-  ggplot(aes(restaurant,calories, fill = calories))+
+  group_by(restaurant) %>% 
+  ggplot(aes(restaurant, calories,fill = calories))+
   geom_col()+
-  coord_flip()
-  
+  coord_flip()+ 
+  theme_minimal()
+
+
 ```
+
+
+
+
 
