@@ -46,7 +46,7 @@ data <- fastfood
 head(fastfood, n = 10)
 
 #first 10 rows of the dataset and the first 5 variables .
-knitr::kable(head(fastfood[, 1:5]), "simple")
+knitr::kable(fastfood[1:10, 1:5])
 
 #8.observations that has more than 1000 calories.
 fastfood%>%
@@ -83,7 +83,7 @@ fastfood %>%
 #14.Variable to the dataset, which calculates the average calories per type of restaurant.
 average_calories <- data.frame(fastfood %>%
   group_by(restaurant) %>%
-  summarise(calories= mean(calories)))
+  summarise(calories= mean(calories))) # need to replace with mutate
 
 #15.Graph with colour
 fastfood %>%
@@ -91,7 +91,6 @@ fastfood %>%
     geom_col()+
   coord_flip()
 
- 
 ```
 
 **Column charts** are useful for showing data changes over a period of time or *for illustrating comparisons among items*. In **column charts**, categories are typically organized along the horizontal axis and values along the vertical axis.
@@ -112,37 +111,32 @@ fastfood %>%
  
 ```
 
-
 ## Part 3
 
 ```{r}
-
-#factor(data)
-
-#18.Variable(s) which should be factors. 
-fastfood$total_fat <- as.factor(fastfood$total_fat)
-skim(fastfood)
-
-fastfood$cal_fat <- as.factor(fastfood$cal_fat)
-skim(fastfood)
-
-fastfood$calories <- as.integer(fastfood$calories)
+#18.Variable(s) which should be factors
+fastfood$restaurant <- as_factor(fastfood$restaurant)
+fastfood$item <- as_factor(fastfood$item)
 
 str(fastfood)
-
 ```
 
 
 ```{r}
-
 as_tibble(fastfood)
 
-fastfood %>% count(calories)
-
 #19.Create two new variables.
+calories_type <- 
+fastfood %>% 
+  mutate(calories=cut_number(calories,3, labels=c('low', 'med', 'high'))) %>% 
+  arrange(calories_type,desc()) 
 
-table(group=cut_number(fastfood$calories,3)) 
-
-
+#20.
+calories_type%>% 
+  group_by(restaurant)%>%
+  ggplot(aes(restaurant,calories, fill = calories))+
+  geom_col()+
+  coord_flip()
+  
 ```
 
