@@ -120,11 +120,13 @@ fastfood %>%
 #factor(data)
 
 #18.Variable(s) which should be factors. 
-fastfood$calories <- as.factor(fastfood$calories)
+fastfood$total_fat <- as.factor(fastfood$total_fat)
 skim(fastfood)
 
 fastfood$cal_fat <- as.factor(fastfood$cal_fat)
 skim(fastfood)
+
+fastfood$calories <- as.integer(fastfood$calories)
 
 str(fastfood)
 
@@ -132,12 +134,15 @@ str(fastfood)
 
 
 ```{r}
+
+as_tibble(fastfood)
+
+fastfood %>% count(calories)
+
 #19.Create two new variables.
 
+table(group=cut_number(fastfood$calories,3)) 
 
-calories_type <- table(cut_number(runif(1000), 3)) 
 
-
-  
 ```
 
