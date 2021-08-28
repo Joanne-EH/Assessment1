@@ -128,6 +128,12 @@ calories_type%>%
   theme_minimal()+
   ggtitle("Restaurant calories types")
 
+ggplot(calories_type, aes(total_fat, calories, colour=calories))+
+  geom_jitter()+
+  coord_flip()+
+  facet_wrap(~restaurant)+
+  ggtitle("Restaurant calories by total fat")
+
 ```
 
 ```{r}
@@ -139,9 +145,16 @@ trans_fat_percent <-
   mutate(rate=trans_fat/total_fat*100)
 
 #22.Dataviz that shows the distribution of `trans_fat` in food items for each type of restaurant
-ggplot(trans_fat_percent, aes(rate, trans_fat, colour=trans_fat))+
+trans_fat_percent%>% 
+  group_by(restaurant) %>% 
+  ggplot(aes(rate, trans_fat))+
+  geom_jitter()+
+  geom_smooth()+
+  theme_minimal()
+  
+
+ggplot(trans_fat_percent, aes(rate, trans_fat, colour = calories))+
   geom_point()+
-  coord_flip()+
   facet_wrap(~restaurant)+
   ggtitle("Trans fat percentage by restaurant")
 
