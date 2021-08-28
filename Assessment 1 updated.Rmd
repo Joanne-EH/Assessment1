@@ -17,7 +17,6 @@ library(skimr)
 theme_set(theme_light())
 ```
 
-
 # RMarkdown ***editing***
 
 **R** is a terrific tool for telling stories with graphics and data, but sometimes you need words too. **R Markdown** *weaves together* narrative text and code to produce elegantly formatted reports, papers, books, slides and more.
@@ -27,8 +26,6 @@ R Markdown documents are fully reproducible. Use a productive notebook interface
 R Markdown supports dozens of static and dynamic output formats including HTML, PDF, MS Word, Beamer, HTML5 slides, Tufte-style handouts, books, dashboards, shiny applications, scientific articles, websites, and more.
 
 * [Markdown Basics](https://rmarkdown.rstudio.com/lesson-8.htm) are available from the ***R Markdown studio*** website.
-
-
 
 ```{r}
 download.file(url = "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-09-04/fastfood_calories.csv",
@@ -84,7 +81,8 @@ average_calories <- data.frame(fastfood %>%
 fastfood %>%
   ggplot(aes(total_fat, restaurant, fill = restaurant)) +
     geom_col()+
-  coord_flip()
+  ggtitle("Total fat by restaurant")
+
 ```
 
 **Column charts** are useful for showing data changes over a period of time or *for illustrating comparisons among items*. In **column charts**, categories are typically organized along the horizontal axis and values along the vertical axis.
@@ -100,7 +98,8 @@ max_total_fat <- data.frame(fastfood) %>%
 fastfood %>% 
   group_by("Macdonalds")%>%
   ggplot(aes(sugar,protein, colour = restaurant))+
-  geom_point()
+  geom_point()+
+  ggtitle("Protein vs Sugar by restaurant")
  
 ```
 
@@ -111,12 +110,9 @@ fastfood$restaurant <- as_factor(fastfood$restaurant)
 fastfood$item <- as_factor(fastfood$item)
 
 str(fastfood)
-
-
 ```
 
 ```{r}
-
 #19.Create new variable (1/2).
 calories_type <- 
   fastfood %>% 
@@ -129,21 +125,40 @@ calories_type%>%
   ggplot(aes(restaurant, calories,fill = calories))+
   geom_col()+
   coord_flip()+ 
-  theme_minimal()
+  theme_minimal()+
+  ggtitle("Restaurant calories types")
 
-ggplot(calories_type, aes(item, calories, colour=calories, label=item))+
-  geom_jitter()+
-  facet_wrap(~restaurant)
-
-
- 
 ```
 
 ```{r}
+as_tibble(fastfood)
 
+#21.Second variable created.
+trans_fat_percent <- 
+  fastfood %>% 
+  mutate(rate=trans_fat/total_fat*100)
 
+#22.Dataviz that shows the distribution of `trans_fat` in food items for each type of restaurant
+ggplot(trans_fat_percent, aes(rate, trans_fat, colour=trans_fat))+
+  geom_point()+
+  coord_flip()+
+  facet_wrap(~restaurant)+
+  ggtitle("Trans fat percentage by restaurant")
 
+```
+```{r}
+#23.Calculate and show the average (mean)  `total_fat` for each type of restaurant
+fastfood %>%
+  group_by(restaurant) %>%
+  summarise(average_total_fat= mean(total_fat))
 
+#24.Dataviz that allow to compare different restaurants on this variable.
+fastfood %>%
+  group_by(restaurant) %>%
+  ggplot(aes(mean(total_fat), restaurant, fill = restaurant)) +
+    geom_col()+
+  ggtitle("Average fat by restaurant")
+  
 ```
 
 
