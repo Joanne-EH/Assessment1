@@ -1,0 +1,39 @@
+---
+title: "Assessment 2"
+author: "Joanne Elizalde-Hernandez"
+date: "01/09/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+#Assignment 2
+
+##Joanne Elizalde-Hernandez s3886091
+
+```{r}
+library(tidyverse)
+library(skimr)
+
+data <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-11-20/thanksgiving_meals.csv")
+
+#isolate variables that relevant.  Remove people who do not celebrate the event.
+#consider grouping main dishes.
+#group by US region and think about the most popular dish in each region. Sort and arrange with descending order.  Count can take more than one variable and we can count by main dish and us region in the same bracket.
+#for my family income, if I want to use regression, I need to move away from letters to numbers (parse_number function). This is for the linear model 'lm' function. What would predict family income-> by considering age as well (use parse_number), mutate to create it. 
+#community type is a good predictor, but need to get rid of all N/As (but need to explain), to get frid of n/as, use filter function.
+#count how many variable under "travel".
+#To let go use select with minus.
+#count main dish to see options
+#Consider facet wrapping
+#complete up to the data visualization component. 
+#for categorizes you can only geom_bar and flip it.
+
+skim(data)
+
+```
+
