@@ -12,7 +12,6 @@ library(tidyverse)
 library(skimr)
 
 data <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-11-20/thanksgiving_meals.csv")
-
 ```
 ## *Joanne Elizalde-Hernandez*  **s3886091**
 
@@ -21,42 +20,92 @@ data <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/
 ### 1. Display the first 10 rows of the dataset using `kable()` function (1 marks). 
 
 ```{r}
-
 knitr::kable(data[1:10, 1:10], "simple")
-
-Data2 <- head(data)
-knitr::kable(Data2, "simple", "col.names" = gsub("_", " ", names(data)), align = "c", caption = NULL)
 ```
 
 ### 2. Using `skim()` display the summary of variables. 
 
 ```{r}
 skim(data)
+```
+### Think about the task to predict a family income based on their menu: what variables may be useful? Are all of them correct type? 
+Variables taken from the **thanksgiving_meals.csv** data set that would be useful to predict a family income based on their thanksgiving menu would be:
+1. us_region
+2. family_income
+3. main_dish
+4. age
+5. community_type
+6. celebrate = "Yes"
 
+These variables contain the least missing values and would provide a truer representation of the data.  However not all the variables are the correct types and there is a character vectors that contain strings that needs to be converted to numeric representation to be able to plot. Some other variables also contain unorganized text that need to be converted to categorical variables.
+
+### Think about the task to predict a community type or US_region based on their menu: what variables may be useful? Are all of them correct type? (2 marks)
+
+
+
+
+
+### 3. Use `fct_reorder` and `parse_number` functions to create a factor variable `family_income`(2 mark).
+
+```{r}
+data %>% mutate(family_income=fct_reorder(family_income, parse_number(family_income)))
+```
+
+### 4. What is the number of people who celebrate? (1 mark)
+1058 people celebrate
+
+```{r}
+data %>% count(celebrate = "Yes")
+```
+
+### 5. What are categories and insights for each main dish served and the method it is prepared? (2 marks)
+
+```{r}
+data %>% group_by(main_dish) %>% count(main_prep)
 
 data %>% 
-  group_by(main_dish) %>% 
-  count(main_dish)
+  count(main_prep, main_dish) %>% 
+  ggplot(aes(main_prep, y=n))+
+  geom_col()+
+   coord_flip()+
+  facet_wrap(~main_dish)
 
-Turkey <- data %>% 
-  filter(main_dish == "Turkey")
 
-data %>% 
-  group_by(family_income) %>% 
-  count(family_income)
 
-data %>% 
-  group_by(us_region) %>% 
- count(us_region)
 
-Turkey %>% 
-  group_by(us_region) %>% 
-  filter(celebrate == "Yes") %>% 
-  count(celebrate) %>% 
-  ggplot(aes(n,us_region))+
-  geom_point()+
-  coord_flip()
 
 ```
 
+
+
+
+
+
+```{r}
+#from Maria for q13
+
+library(randomForest)
+
+Turkey%>%count(main_dish, main_prep, sort=TRUE)
+
+Turkey %>% count(celebrate, main_dish, main_prep_other, sort=TRUE)
+
+Turkey <- Turkey %>% 
+  mutate(family_income_num=parse_number(family_income)) %>% 
+  filter(!is.na(family_income_num))
+
+summary(Turkey)
+
+lm(family_income_num~celebrate+main_dish+parse_number(age),data=Turkey)
+
+
+#model 1
+random_fr_res <- randomForest(family_income_num~celebrate+main_dish, data=Turkey, no.action=na.omit)
+
+summary(random_fr_res)
+
+#model2
+random_fr_res2 <- randomForest(family_income_num~celebrate+age+us_region, data=Turkey, no.action=na.omit)
+
+```
 
