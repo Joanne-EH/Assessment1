@@ -63,21 +63,32 @@ data %>% count(celebrate = "Yes")
 ```{r}
 data %>% group_by(main_dish) %>% count(main_prep)
 
-data %>% 
-  count(main_prep, main_dish) %>% 
-  ggplot(aes(main_prep, y=n))+
-  geom_col()+
-   coord_flip()+
-  facet_wrap(~main_dish)
-
-
-
-
-
 ```
 
+### 6. Create 3 different data viz showing insights for main dish served and the method. Provide your own legend and use themes.
+Write 2-3 sentences with your explanation of each insight. (4 marks)
 
+```{r}
+#Data vis 1
+data %>% 
+  count(main_prep, main_dish) %>% 
+  ggplot(aes(main_prep, y=n, fill = main_prep))+
+  geom_col()+
+   coord_flip()+
+  facet_wrap(~main_dish)+
+  theme_light()+
+  ggtitle("Preperation type for Main dishes")
 
+#data vis 2
+Main_dishes <- data %>% 
+  group_by(main_dish) %>% 
+  count(main_prep) 
+
+Main_dishes%>% 
+  ggplot(aes(main_dish,y=n, fill=main_prep))+
+  geom_col()+
+  coord_flip()
+```
 
 
 
