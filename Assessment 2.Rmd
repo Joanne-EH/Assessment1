@@ -63,11 +63,14 @@ data %>% tabyl(celebrate)
 ```
 
 ### 5. What are categories and insights for each main dish served and the method it is prepared? (2 marks)
-Turkey is the most popular main dish served at thanksgiving.
+**Turkey** is the most popular main dish served at thanksgiving with a total of *859* people serving the main dish. Main preparation type for Turkey is *Baked* - 422, and *Roasted* - 351 and *Other* - 86.
+
 ```{r}
-data %>% group_by(main_dish) %>% count(main_prep)
+data %>% group_by(main_dish) %>% count('main_dish')
 
 data %>% tabyl(main_dish, main_prep)
+
+
 ```
 
 ### 6. Create 3 different data viz showing insights for main dish served and the method. Provide your own legend and use themes.
@@ -76,7 +79,8 @@ Write 2-3 sentences with your explanation of each insight. (4 marks)
 ```{r}
 #Data vis 1
 data %>% 
-  count(main_prep, main_dish) %>% 
+  group_by(main_dish) %>% 
+  count('main_prep', 'main_dish') %>% 
   ggplot(aes(main_prep, y=n, fill = main_prep))+
   geom_col()+
   geom_text(aes(label = n))+
@@ -85,15 +89,19 @@ data %>%
   theme_light()+
   ggtitle("Preperation type for Main dishes")
 
+
 #data vis 2
 Main_dishes <- data %>% 
   group_by(main_dish) %>% 
-  count(main_prep) 
+  count('main_prep') 
 
 Main_dishes%>% 
-  ggplot(aes(main_dish,y=n, colour=main_prep))+
+  ggplot(aes('main_dish',y=n, colour=main_prep))+
   geom_jitter()+
   coord_flip()
+
+
+
 
 
 ```
@@ -105,23 +113,28 @@ Main_dishes %>% group_by("Chicken") %>% count(main_prep)
 
 ```
 ### 7. How many use cranberry sauce? How many use gravy? 2marks
-A total of **803**  said they use cranberry sauce. *64.5%* of these individuals used canned cranberry sauce,  the other *35.5%* used homemade cranberry sauce. 
-
-**892** said they used gravy.
 
 ```{r}
 #How many use cranberry.
-data %>% count(cranberry)
+data %>% count('cranberry')
+
+data %>% tabyl(cranberry)
+
+Cranberry <- data %>% filter(!is.na(cranberry)) %>% group_by(cranberry) %>% count()
 
 #How many use gravy.
-data %>% count(gravy == "Yes")
+data %>% count(~gravy == "Yes")
 
 data%>%
   filter(gravy== "Yes")
+
+
 ```
 
 ### 8. What is the distribution of those who celebrate across income ranges. Create a data viz.
 Write 2-3 sentences with your explanation of each insight. (4 marks)
+Families within the income bracket *$25,000 to $49,999*, who celebrate thanksgiving made up the largest group that celebrated the event.  Followed closely by familes within the incomes *$50,000 to $74,999* and *$75,000 to $99,999*.
+Families who income brackets sat at *$150,000 to $174,999* or *$175,000 to $199,999*  were less likely than all other categories to celebrate thanksgiving.
 
 ```{r}
 Celebrate <- data %>% 
@@ -139,33 +152,60 @@ Celebrate %>%
  
 
 ```
+### 10. Use the following code to create a new data set 2 mark. Write 2-3 sentences with your explanation of what it does. (4 marks)
+
+By creating a new data set with the **select** function, we are able to easily to refer to variables based on their names. The **starts_with** function matches variables according to a given pattern that starts with a defined prefix.  Therefore the new data set created enables us to easily see the type of sides, pies and dessert that are consumed at thanksgiving.
+
+```{r}
+data %>% select(id, starts_with("side"),
+         starts_with("pie"),
+         starts_with("dessert")) %>%
+  select(-side15, -pie13, -dessert12) %>%
+  gather(type, value, -id) %>%
+  filter(!is.na(value),
+         !value %in% c("None", "Other (please specify)")) %>%
+  mutate(type = str_remove(type, "\\d+"))
+
+
+Sides <- data %>% select(id, starts_with("side"),
+         starts_with("pie"),
+         starts_with("dessert")) %>%
+  select(-side15, -pie13, -dessert12) %>%
+  gather(type, value, -id) %>%
+  filter(!is.na(value),
+         !value %in% c("None", "Other (please specify)")) %>%
+  mutate(type = str_remove(type, "\\d+"))
+
+skim(Sides)
+
+Sides %>% group_by(value) %>% 
+  ggplot(aes(value,type, fill=type))+geom_col()+coord_flip()
+```
+### 11. Intall package `widyr` and use `pairwise_cor()` function https://www.rdocumentation.org/packages/widyr/versions/0.1.3/topics/pairwise_cor. Write 2-3 sentences with your explanation of what it does. (2 marks)
+
+The function *pairwise_cor* finds correlations of pairs of items in a column, based on a "feature" column that links them together. 
+
+```{r}
+#install.packages('widyr')
+library(widyr)
+
+data %>% pairwise_cor(main_dish, main_dish_other)
+
+```
+### 13. Use `lm()` or randomForest() function to build a model that predict a family income based on data in the dataset. 8 marks13. Use `lm()` or randomForest() function to build a model that predict a family income based on data in the dataset. 8 marks
 
 
 ```{r}
-#from Maria for q13
-
 library(randomForest)
 
-Turkey%>%count(main_dish, main_prep, sort=TRUE)
-
-Turkey %>% count(celebrate, main_dish, main_prep_other, sort=TRUE)
-
-Turkey <- Turkey %>% 
+data2<- data %>% 
   mutate(family_income_num=parse_number(family_income)) %>% 
   filter(!is.na(family_income_num))
 
-summary(Turkey)
+summary(data2)
 
-lm(family_income_num~celebrate+main_dish+parse_number(age),data=Turkey)
+randomForest(family_income_num~celebrate+main_dish+age, data = data2, na.action = na.omit)
 
-
-#model 1
-random_fr_res <- randomForest(family_income_num~celebrate+main_dish, data=Turkey, no.action=na.omit)
-
-summary(random_fr_res)
-
-#model2
-random_fr_res2 <- randomForest(family_income_num~celebrate+age+us_region, data=Turkey, no.action=na.omit)
 
 ```
 
