@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(skimr)
+library(janitor)
 
 data <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-11-20/thanksgiving_meals.csv")
 ```
@@ -52,17 +53,21 @@ data %>% mutate(family_income=fct_reorder(family_income, parse_number(family_inc
 ```
 
 ### 4. What is the number of people who celebrate? (1 mark)
-1058 people celebrate
+980 people celebrate
 
 ```{r}
-data %>% count(celebrate = "Yes")
+data%>%
+  filter(celebrate== "Yes")
+
+data %>% tabyl(celebrate)
 ```
 
 ### 5. What are categories and insights for each main dish served and the method it is prepared? (2 marks)
-
+Turkey is the most popular main dish served at thanksgiving.
 ```{r}
 data %>% group_by(main_dish) %>% count(main_prep)
 
+data %>% tabyl(main_dish, main_prep)
 ```
 
 ### 6. Create 3 different data viz showing insights for main dish served and the method. Provide your own legend and use themes.
@@ -74,6 +79,7 @@ data %>%
   count(main_prep, main_dish) %>% 
   ggplot(aes(main_prep, y=n, fill = main_prep))+
   geom_col()+
+  geom_text(aes(label = n))+
    coord_flip()+
   facet_wrap(~main_dish)+
   theme_light()+
@@ -85,11 +91,54 @@ Main_dishes <- data %>%
   count(main_prep) 
 
 Main_dishes%>% 
-  ggplot(aes(main_dish,y=n, fill=main_prep))+
-  geom_col()+
+  ggplot(aes(main_dish,y=n, colour=main_prep))+
+  geom_jitter()+
   coord_flip()
+
+
+```
+```{r}
+#data vis3
+Main_dishes %>% group_by("Chicken") %>% count(main_prep)
+
+
+
+```
+### 7. How many use cranberry sauce? How many use gravy? 2marks
+A total of **803**  said they use cranberry sauce. *64.5%* of these individuals used canned cranberry sauce,  the other *35.5%* used homemade cranberry sauce. 
+
+**892** said they used gravy.
+
+```{r}
+#How many use cranberry.
+data %>% count(cranberry)
+
+#How many use gravy.
+data %>% count(gravy == "Yes")
+
+data%>%
+  filter(gravy== "Yes")
 ```
 
+### 8. What is the distribution of those who celebrate across income ranges. Create a data viz.
+Write 2-3 sentences with your explanation of each insight. (4 marks)
+
+```{r}
+Celebrate <- data %>% 
+  filter(celebrate == "Yes")
+
+Celebrate %>% tabyl(family_income)
+
+Celebrate %>% 
+  filter(!is.na(family_income)) %>% 
+  filter(!is.na(us_region)) %>% 
+  ggplot(aes(family_income, celebrate == "Yes", fill= us_region))+
+  geom_col()+
+  coord_flip()+
+  labs(title = "Distribution of those who celebrate across income ranges", x = "Family Income bracket", y = "Count of People who Celebrate Thanksgiving")
+ 
+
+```
 
 
 ```{r}
