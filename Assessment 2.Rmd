@@ -17,27 +17,28 @@ data <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/
 
 # "Assignment 2"
 
-### 1. Display the first 10 rows of the dataset using `kable()` function (1 marks). 
+### 1. Display the first 10 rows of the dataset using `kable()` function. 
+
 ```{r}
 knitr::kable(data[1:10, 1:10], "simple")
 ```
+
 ### 2. Using `skim()` display the summary of variables. 
+
 ```{r}
 skim(data)
 ```
-### Think about the task to predict a family income based on their menu: what variables may be useful? Are all of them correct type? 
+
+## Family income based on menu.
+
 Variables taken from the **thanksgiving_meals.csv** data set that would be useful to predict a family income based on their thanksgiving menu would be:
-1. us_region
-2. family_income
-3. main_dish
-4. age
-5. community_type
-6. celebrate = "Yes"
+*  us_region, *  family_income, *  main_dish, *  age, *  community_type and *  celebrate = "Yes"
 
 These variables contain the least missing values and would provide a truer representation of the data.  However not all the variables are the correct types and  character vectors that contain strings need to be converted to numeric representation to be able to plot. Some variables also contain unorganized text that need to be converted to categorical variables.
 
-### Think about the task to predict a community type or US_region based on their menu: what variables may be useful? Are all of them correct type? (2 marks)
+## Community type or US_region based on their menu.
 
+Variables that would be useful to predict community type or us_region based on their menu would be the type and number of sides.
 
 
 
@@ -45,106 +46,119 @@ These variables contain the least missing values and would provide a truer repre
 ### 3. Use `fct_reorder` and `parse_number` functions to create a factor variable `family_income`(2 mark).
 
 ```{r}
-data %>% mutate(family_income=fct_reorder(family_income, parse_number(family_income)))
-```
+data %>% count(family_income)
 
-### 4. What is the number of people who celebrate? (1 mark)
-980 people celebrate
+data <- data %>% mutate(family_income=fct_reorder(family_income, parse_number(family_income)))
+
+skim(data)
+```
+### 4. What is the number of people who celebrate? 
+
+**980** people celebrate Thanksgiving.
 
 ```{r}
-data%>%
-  filter(celebrate== "Yes")
+data %>% count(celebrate, sort = TRUE)
 
 data %>% tabyl(celebrate)
 ```
+### 5. What are categories and insights for each main dish served and the method it is prepared? 
 
-### 5. What are categories and insights for each main dish served and the method it is prepared? (2 marks)
-**Turkey** is the most popular main dish served at thanksgiving with a total of *859* people serving the main dish. Main preparation type for Turkey is *Baked* - 422, and *Roasted* - 351 and *Other* - 86.
+The seven categories for main dish served are Turkey, Ham/Pork, Chicken, Roast beef, Tofurkey, Turducken and other.
+
+**Turkey** is the most popular main dish at thanksgiving with a total of *859* people serving the dish. Main preparation type for Turkey is *Baked* - 422, and *Roasted* - 351 and *Other* - 86.
+
+Turducken, the dish consisting of a deboned chicken stuffed into a deboned duck, was only served 3 times.
 
 ```{r}
-data %>% group_by(main_dish) %>% count('main_dish')
+data %>% group_by(main_dish) %>% count(main_dish)%>% filter(!is.na(main_dish))%>% 
+  filter(!main_dish == "Other (please specify")
 
 data %>% tabyl(main_dish, main_prep)
-```
 
-### 6. Create 3 different data viz showing insights for main dish served and the method. Provide your own legend and use themes.
-Write 2-3 sentences with your explanation of each insight. (4 marks)
+Main_dish_categories <- data %>% filter(!is.na(main_dish)|!is.na(main_prep)) %>% 
+  filter(!main_dish == "I don't know") %>%  filter(!main_prep == "I don't know") %>% 
+  filter(!main_dish == "Other (please specify") %>% filter(!main_prep == "Other (please specify")
+
+  Main_dish_categories %>% count(main_dish, sort = TRUE)
+```
+### 6. Create 3 different data viz showing insights for main dish served and the method. 
 
 ```{r}
+#Data vis 1
 
 Main_dishes <- data %>% 
   group_by(main_dish) %>% 
-  count(main_dish,main_prep, family_income, us_region)
+  count(main_dish,main_prep, family_income, us_region, prayer, community_type, age, gender)
 
-#Data vis 1
 Main_dishes %>% filter(!is.na(main_dish)&!is.na(main_prep)&!is.na(us_region)) %>% 
-  ggplot(aes(us_region,n, fill=main_dish))+
+  ggplot(aes(main_dish,n, fill=main_prep))+
   geom_col()+
   coord_flip()+
+  facet_wrap(~us_region)+
   theme_light()+
-  labs(title = "Main dish served at Thanksgiving by US region", x = "US Region", y = "Count of main dish")
+  labs(title = "Preperation type of main dishes by US region", x = "Main dish served")
   
 #data vis 2
-Main_dishes%>% filter(!is.na(main_dish)&!is.na(main_prep)&!is.na(us_region)) %>% 
-  ggplot(aes(main_dish, main_prep, size = n, colour=n))+
-  geom_jitter()+
-  coord_flip()+
-  theme_light()+
-  labs(title = "Preperation type of main dishes", x = "Main dish type", y = "Preperation type")
+Main_dishes_lumped <- Main_dishes %>% 
+  filter(!is.na(main_dish)) %>% 
+  mutate(main_dish=fct_lump(main_dish,6), sort = TRUE)
 
+Main_dishes_lumped %>% mutate(main_dish = fct_reorder(main_dish,n)) %>% 
+  ggplot(aes(main_dish, min(n), fill = main_prep))+
+  geom_col()+
+  coord_flip()+
+  facet_wrap(~community_type)+
+  theme_light()+
+  labs(title = "Preperation type of main dishes by community type", x = "Main dish served")
 
 #data vis 3
-Main_dishes%>% filter(!is.na(main_dish)&!is.na(main_prep)&!is.na(us_region)) %>% 
-   ggplot(aes(us_region,y=n, colour=main_prep))+
-  geom_count()+
+Main_dishes%>% filter(!is.na(main_dish)&!is.na(main_prep)&!is.na(gender)) %>% 
+   ggplot(aes(main_dish,y=n, fill = main_prep))+
+  geom_col()+
   coord_flip()+
-  facet_wrap(~main_prep)+
+  facet_wrap(~gender)+
   theme_light()+
-  labs(title = "Preperation type of main dishes by US regions", x = "US Region", y = "Count of prep type")
-
-
-
+  labs(title = "Preperation type of main dishes by gender", x = "Main dish served")
 ```
-### 7. How many use cranberry sauce? How many use gravy? 2marks
+
+### 7.How many use cranberry sauce? How many use gravy? 
+
+828 people said they have cranberry served. 892 people said yes they have gravy at Thanksgiving.
+
 ```{r}
 #How many use cranberry.
-data %>% count('cranberry')
+data %>% count(cranberry) %>% filter(!is.na(cranberry))
+data %>% count(cranberry) %>% filter(!is.na(cranberry)) %>% ggplot(aes(cranberry,n))+geom_col()+
+  labs(title = "People who use cranberry sauce", x = "cranberry type ", y = "count of people")
 
 data %>% tabyl(cranberry)
-
 Cranberry <- data %>% filter(!is.na(cranberry)) %>% group_by(cranberry) %>% count()
 
 #How many use gravy.
 data %>% count(gravy == "Yes")
 
-data%>%
-  filter(gravy== "Yes")
-
-
 ```
+### 8. What is the distribution of those who celebrate across income ranges. 
 
-### 8. What is the distribution of those who celebrate across income ranges. Create a data viz.
-Write 2-3 sentences with your explanation of each insight. (4 marks)
-Families within the income bracket *$25,000 to $49,999*, who celebrate thanksgiving made up the largest group that celebrated the event.  Followed closely by familes within the incomes *$50,000 to $74,999* and *$75,000 to $99,999*.
+Families within the income bracket *$25,000 to $49,999*, who celebrate thanksgiving made up the largest group that celebrated the event.  Followed closely by families within the incomes *$50,000 to $74,999* and *$75,000 to $99,999*.
+
 Families who income brackets sat at *$150,000 to $174,999* or *$175,000 to $199,999*  were less likely than all other categories to celebrate thanksgiving.
 
+A large number of people who celebrate Thanksgiving across all regions of the US preferred not to anser the question relating to their family income.
+
+### 9.Create a data viz.
+
 ```{r}
-Celebrate <- data %>% 
-  filter(celebrate == "Yes")
-
-Celebrate %>% tabyl(family_income)
-
-Celebrate %>% 
+data %>% 
   filter(!is.na(family_income)) %>% 
-  filter(!is.na(us_region)) %>% 
+  filter(!is.na(us_region)) %>% arrange(desc(family_income)) %>% 
   ggplot(aes(family_income, celebrate == "Yes", fill= us_region))+
   geom_col()+
   coord_flip()+
   labs(title = "Distribution of those who celebrate across income ranges", x = "Family Income bracket", y = "Count of People who Celebrate Thanksgiving")
- 
 
 ```
-### 10. Use the following code to create a new data set 2 mark. Write 2-3 sentences with your explanation of what it does. (4 marks)
+### 10. Use the following code to create a new data set 2 mark. 
 
 By creating a new data set with the **select** function, we are able to easily to refer to variables based on their names. The **starts_with** function matches variables according to a given pattern that starts with a defined prefix.  Therefore the new data set created enables us to easily see the type of sides, pies and dessert that are consumed at thanksgiving.
 
@@ -173,7 +187,7 @@ skim(Sides)
 Sides %>% group_by(value) %>% 
   ggplot(aes(value,type, fill=type))+geom_col()+coord_flip()
 ```
-### 11. Intall package `widyr` and use `pairwise_cor()` function https://www.rdocumentation.org/packages/widyr/versions/0.1.3/topics/pairwise_cor. Write 2-3 sentences with your explanation of what it does. (2 marks)
+### 11. Intall package `widyr` and use `pairwise_cor()` function. 
 
 The function *pairwise_cor* finds correlations of pairs of items in a column, based on a "feature" column that links them together. 
 
@@ -183,21 +197,40 @@ library(widyr)
 
 data %>% pairwise_cor(main_dish, main_dish_other)
 
+data %>% pairwise_cor(main_dish, main_dish_other, sort = TRUE)
 ```
 ### 13. Use `lm()` or randomForest() function to build a model that predict a family income based on data in the dataset. 8 marks13. Use `lm()` or randomForest() function to build a model that predict a family income based on data in the dataset. 8 marks
 
 
 ```{r}
+#install.packages("randomForest")
 library(randomForest)
 
-data2<- data %>% 
-  mutate(family_income_num=parse_number(family_income)) %>% 
+data%>%count(main_dish, main_prep, sort=TRUE)
+
+data %>% count(celebrate, main_dish, main_prep_other, sort=TRUE)
+
+data <- data %>% 
+  mutate(family_income_num=parse_number(as.character(family_income))) %>% 
   filter(!is.na(family_income_num))
 
-summary(data2)
+summary(data)
 
-randomForest(family_income_num~celebrate+main_dish+age, data = data2, na.action = na.omit)
 
+#model 1
+Ramdom_model1 <- randomForest(family_income_num~celebrate+main_dish, data=data, no.action=na.omit)
+
+Summary(Ramdom_model1)
+
+#model2
+Ramdom_model2 <- randomForest(family_income_num~celebrate+age+us_region, data=data, no.action=na.omit)
+
+Summary(Ramdom_model2)
+
+#model3
+Ramdom_model3 <- randomForest(family_income_num~celebrate+gender+community_type, data=data, no.action=na.omit)
+
+Summary(Ramdom_model3)
 
 ```
 
