@@ -4,7 +4,6 @@ author: "Joanne Elizalde-Hernandez"
 date: "01/09/2021"
 output: html_document
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -19,13 +18,10 @@ data <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/
 # "Assignment 2"
 
 ### 1. Display the first 10 rows of the dataset using `kable()` function (1 marks). 
-
 ```{r}
 knitr::kable(data[1:10, 1:10], "simple")
 ```
-
 ### 2. Using `skim()` display the summary of variables. 
-
 ```{r}
 skim(data)
 ```
@@ -38,7 +34,7 @@ Variables taken from the **thanksgiving_meals.csv** data set that would be usefu
 5. community_type
 6. celebrate = "Yes"
 
-These variables contain the least missing values and would provide a truer representation of the data.  However not all the variables are the correct types and there is a character vectors that contain strings that needs to be converted to numeric representation to be able to plot. Some other variables also contain unorganized text that need to be converted to categorical variables.
+These variables contain the least missing values and would provide a truer representation of the data.  However not all the variables are the correct types and  character vectors that contain strings need to be converted to numeric representation to be able to plot. Some variables also contain unorganized text that need to be converted to categorical variables.
 
 ### Think about the task to predict a community type or US_region based on their menu: what variables may be useful? Are all of them correct type? (2 marks)
 
@@ -69,51 +65,47 @@ data %>% tabyl(celebrate)
 data %>% group_by(main_dish) %>% count('main_dish')
 
 data %>% tabyl(main_dish, main_prep)
-
-
 ```
 
 ### 6. Create 3 different data viz showing insights for main dish served and the method. Provide your own legend and use themes.
 Write 2-3 sentences with your explanation of each insight. (4 marks)
 
 ```{r}
-#Data vis 1
-data %>% 
-  group_by(main_dish) %>% 
-  count('main_prep', 'main_dish') %>% 
-  ggplot(aes(main_prep, y=n, fill = main_prep))+
-  geom_col()+
-  geom_text(aes(label = n))+
-   coord_flip()+
-  facet_wrap(~main_dish)+
-  theme_light()+
-  ggtitle("Preperation type for Main dishes")
 
-
-#data vis 2
 Main_dishes <- data %>% 
   group_by(main_dish) %>% 
-  count('main_prep') 
+  count(main_dish,main_prep, family_income, us_region)
 
-Main_dishes%>% 
-  ggplot(aes('main_dish',y=n, colour=main_prep))+
+#Data vis 1
+Main_dishes %>% filter(!is.na(main_dish)&!is.na(main_prep)&!is.na(us_region)) %>% 
+  ggplot(aes(us_region,n, fill=main_dish))+
+  geom_col()+
+  coord_flip()+
+  theme_light()+
+  labs(title = "Main dish served at Thanksgiving by US region", x = "US Region", y = "Count of main dish")
+  
+#data vis 2
+Main_dishes%>% filter(!is.na(main_dish)&!is.na(main_prep)&!is.na(us_region)) %>% 
+  ggplot(aes(main_dish, main_prep, size = n, colour=n))+
   geom_jitter()+
-  coord_flip()
+  coord_flip()+
+  theme_light()+
+  labs(title = "Preperation type of main dishes", x = "Main dish type", y = "Preperation type")
 
 
-
-
-
-```
-```{r}
-#data vis3
-Main_dishes %>% group_by("Chicken") %>% count(main_prep)
+#data vis 3
+Main_dishes%>% filter(!is.na(main_dish)&!is.na(main_prep)&!is.na(us_region)) %>% 
+   ggplot(aes(us_region,y=n, colour=main_prep))+
+  geom_count()+
+  coord_flip()+
+  facet_wrap(~main_prep)+
+  theme_light()+
+  labs(title = "Preperation type of main dishes by US regions", x = "US Region", y = "Count of prep type")
 
 
 
 ```
 ### 7. How many use cranberry sauce? How many use gravy? 2marks
-
 ```{r}
 #How many use cranberry.
 data %>% count('cranberry')
@@ -123,7 +115,7 @@ data %>% tabyl(cranberry)
 Cranberry <- data %>% filter(!is.na(cranberry)) %>% group_by(cranberry) %>% count()
 
 #How many use gravy.
-data %>% count(~gravy == "Yes")
+data %>% count(gravy == "Yes")
 
 data%>%
   filter(gravy== "Yes")
